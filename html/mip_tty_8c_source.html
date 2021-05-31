@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<title>RiachMip: Código-Fonte de G:/Projects/winMipXfer/mipTty.c</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- Gerado por Doxygen 1.6.1 -->
+<div class="navigation" id="top">
+  <div class="tabs">
+    <ul>
+      <li><a href="main.html"><span>Página&nbsp;Principal</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="files.html"><span>Arquivos</span></a></li>
+    </ul>
+  </div>
+  <div class="tabs">
+    <ul>
+      <li><a href="files.html"><span>Lista&nbsp;de&nbsp;Arquivos</span></a></li>
+    </ul>
+  </div>
+<h1>G:/Projects/winMipXfer/mipTty.c</h1><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/*      </span>
+<a name="l00002"></a>00002 <span class="comment"> *      @(#) </span>
+<a name="l00003"></a>00003 <span class="comment"> *      @(#)  prepara terminal para uso durante file xfer</span>
+<a name="l00004"></a>00004 <span class="comment"> *      @(#) Modulo mipTty.c 3.1 25 Aug 1999 19:10:08 </span>
+<a name="l00005"></a>00005 <span class="comment"> *      @(#) JFAB 2004 Jose Fernando Alvim Borges</span>
+<a name="l00006"></a>00006 <span class="comment"> *      @(#) MIP  TCP/IP interface</span>
+<a name="l00007"></a>00007 <span class="comment"> *      @(#) MIP  TCP/IP interface</span>
+<a name="l00008"></a>00008 <span class="comment"> *      @(#) ultima alteracao:</span>
+<a name="l00009"></a>00009 <span class="comment"> *      @(#) </span>
+<a name="l00010"></a>00010 <span class="comment"> *</span>
+<a name="l00011"></a>00011 <span class="comment"> */</span>
+<a name="l00012"></a>00012 
+<a name="l00013"></a>00013 <span class="preprocessor">#include &lt;stdio.h&gt;</span>
+<a name="l00014"></a>00014 
+<a name="l00015"></a>00015 
+<a name="l00016"></a>00016 <span class="preprocessor">#include &lt;fcntl.h&gt;</span>
+<a name="l00017"></a>00017 <span class="preprocessor">#include &lt;signal.h&gt;</span>
+<a name="l00018"></a>00018 <span class="preprocessor">#include &lt;setjmp.h&gt;</span>
+<a name="l00019"></a>00019 <span class="preprocessor">#include &lt;sys/types.h&gt;</span>
+<a name="l00020"></a>00020 <span class="preprocessor">#include &lt;sys/stat.h&gt;</span>
+<a name="l00021"></a>00021 <span class="preprocessor">#include &lt;errno.h&gt;</span>
+<a name="l00022"></a>00022 <span class="preprocessor">#include &lt;stdlib.h&gt;</span>
+<a name="l00023"></a>00023 
+<a name="l00024"></a>00024 <span class="preprocessor">#include &lt;time.h&gt;</span>
+<a name="l00025"></a>00025 
+<a name="l00026"></a>00026 <span class="keywordtype">int</span> Set_Term(<span class="keywordtype">int</span> tty, <span class="keywordtype">int</span> t)
+<a name="l00027"></a>00027 {
+<a name="l00028"></a>00028 <span class="keywordtype">int</span> r; 
+<a name="l00029"></a>00029 <span class="keyword">struct </span>termios term; 
+<a name="l00030"></a>00030 
+<a name="l00031"></a>00031         <span class="keywordflow">if</span> ( t == 1 )
+<a name="l00032"></a>00032         {
+<a name="l00033"></a>00033                 r = ioctl(tty,TCGETS,&amp;term); 
+<a name="l00034"></a>00034                 <span class="keywordflow">if</span> ( r &lt; 0 )
+<a name="l00035"></a>00035                 {
+<a name="l00036"></a>00036                         perror(<span class="stringliteral">&quot;tcgetattr (1)&quot;</span>); 
+<a name="l00037"></a>00037                         <span class="keywordflow">return</span>(-1); 
+<a name="l00038"></a>00038                 }
+<a name="l00039"></a>00039                 term.c_cc[VMIN] = 0; 
+<a name="l00040"></a>00040                 term.c_cc[VTIME] = 0; 
+<a name="l00041"></a>00041                 term.c_lflag = term.c_lflag &amp; ~ICANON &amp; ~ECHO; 
+<a name="l00042"></a>00042                 r = ioctl(tty,TCSETSF,&amp;term); 
+<a name="l00043"></a>00043                 <span class="keywordflow">if</span> ( r &lt; 0 )
+<a name="l00044"></a>00044                 {
+<a name="l00045"></a>00045                         perror(<span class="stringliteral">&quot;tcsetattr (1)&quot;</span>); 
+<a name="l00046"></a>00046                         <span class="keywordflow">return</span>(-1); 
+<a name="l00047"></a>00047                 }
+<a name="l00048"></a>00048                 <span class="keywordflow">return</span>(0); 
+<a name="l00049"></a>00049         }
+<a name="l00050"></a>00050         r = ioctl(tty,TCGETS,&amp;term); 
+<a name="l00051"></a>00051         <span class="keywordflow">if</span> ( r &lt; 0 )
+<a name="l00052"></a>00052         {
+<a name="l00053"></a>00053                 perror(<span class="stringliteral">&quot;tcgetattr (2)&quot;</span>); 
+<a name="l00054"></a>00054                 <span class="keywordflow">return</span>(-1); 
+<a name="l00055"></a>00055         }
+<a name="l00056"></a>00056         term.c_cc[VMIN] = 1; 
+<a name="l00057"></a>00057         term.c_cc[VTIME] = 0; 
+<a name="l00058"></a>00058         term.c_lflag = term.c_lflag | ECHO; 
+<a name="l00059"></a>00059         r = ioctl(tty,TCSETSF,&amp;term); 
+<a name="l00060"></a>00060         <span class="keywordflow">if</span> ( r &lt; 0 )
+<a name="l00061"></a>00061         {
+<a name="l00062"></a>00062                 perror(<span class="stringliteral">&quot;tcsetattr (2)&quot;</span>); 
+<a name="l00063"></a>00063                 <span class="keywordflow">return</span>(-1); 
+<a name="l00064"></a>00064         }
+<a name="l00065"></a>00065         <span class="keywordflow">return</span>(0); 
+<a name="l00066"></a>00066 }       <span class="comment">/* End Set_Term() */</span>
+</pre></div></div>
+<hr size="1"/><address style="text-align: right;"><small>Gerado em Tue Dec 29 14:29:46 2009 para RiachMip por&nbsp;
+<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
+</body>
+</html>
